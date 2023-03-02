@@ -12,43 +12,43 @@ class Game {
   }
 
   gameControlHandler(event) {
-    this.destLocation.x = this.player.location.x;
-    this.destLocation.y = this.player.location.y;
     switch (event.code) {
-      case 'SPACE':
-        console.log('SPACEBAR');
-
+      case "SPACE":
+        console.log("SPACEBAR");
         break;
-      case 'ArrowLeft':
-        this.player.moveWest(this.dimension);
 
+      case "ArrowUp":
+        this.player.moveUp(this.dimension);
         break;
-      case 'ArrowUp':
-        this.player.moveNorth(this.dimension);
 
+      case "ArrowLeft":
+        this.player.moveLeft(this.dimension);
         break;
-      case 'ArrowRight':
-        this.player.moveEast(this.dimension);
 
+      case "ArrowDown":
+        this.player.moveDown(this.dimension);
         break;
-      case 'ArrowDown':
-        this.player.moveSouth(this.dimension);
 
+      case "ArrowRight":
+        this.player.moveRight(this.dimension);
         break;
-      case 'KeyS':
+
+      case "KeyS":
         this.showStatus();
-
         break;
+
       default:
-        console.log('event key: ', event.code);
+        console.log("event key: ", event.code);
     }
 
-    this.obstacles.forEach((obstacle) => {
-      if (this.checkForColliosion(obstacle.location, this.player.location)) {
-        console.log('Boom');
-      } else {
-        this.player.updateLocation();
-      }
+    this.updateWorld();
+  }
+
+  updateWorld() {
+    this.obstacles.forEach((ele) => {
+      this.checkForColliosion(ele.location, this.player.destLocation)
+        ? this.player.takesDamage()
+        : this.player.updateLocation();
     });
   }
 
@@ -61,7 +61,7 @@ class Game {
   }
 
   initGameController() {
-    return document.addEventListener('keyup', (event) => {
+    return document.addEventListener("keyup", (event) => {
       this.gameControlHandler(event);
     });
   }
@@ -69,20 +69,20 @@ class Game {
   initObstacles() {
     const arr = [];
     for (let i = 0; i < this.dimension; i++) {
-      console.log('create an obstacles');
+      console.log("create an obstacles");
       const x = this.calcRandomIntWithMax(this.dimension);
       const y = this.calcRandomIntWithMax(this.dimension);
       const obstacle = new Obstacle(this.calcFieldId({ x: x, y: y }), x, y);
       arr.push(obstacle);
     }
-    console.log(arr);
+    console.log("obstacles", arr);
     return arr;
   }
 
   initPlayer() {
     // const playerName = prompt('Give your player a name:');
-    const playerName = 'Billy Bob';
-    console.log('player born');
+    const playerName = "Billy Bob";
+    console.log("player born");
     return new Player(playerName);
   }
 
@@ -93,8 +93,9 @@ class Game {
   showStatus() {
     const fieldId = this.calcFieldId(this.player.location);
     console.log(this.player.showStatus());
-    console.log(this.player.name, 'stands on field no.: ', fieldId);
-    console.log('field:', this.map.getFieldById(fieldId));
+    console.log(this.player.name, "stands on field no.: ", fieldId);
+    console.log("field: ", this.map.getFieldById(fieldId));
+    console.log("obstacles: ", this.obstacles);
   }
 }
 
@@ -105,7 +106,7 @@ class Obstacle {
       x: x,
       y: y,
     };
-    this.type = 'flower';
+    this.type = "flower";
   }
 }
 
@@ -116,46 +117,48 @@ class Player {
       x: 0,
       y: 0,
     };
-    this.destLocation = {
-      x: x,
-      y: y,
-    };
+    this.destLocation = { ...this.location };
   }
-  moveEast(limit) {
+  moveRight(limit) {
     if (this.destLocation.x < limit - 1) {
-      console.log('move East');
+      console.log("move East");
       this.destLocation.x++;
     } else {
-      console.log('end of map');
+      console.log("end of map");
     }
   }
-  moveNorth(limit) {
+  moveUp(limit) {
     if (this.destLocation.y > 0) {
-      console.log('move North');
+      console.log("move North");
       this.destLocation.y--;
     } else {
-      console.log('end of map');
+      console.log("end of map");
     }
   }
-  moveSouth(limit) {
+  moveDown(limit) {
     if (this.destLocation.y < limit - 1) {
-      console.log('move South');
+      console.log("move South");
       this.destLocation.y++;
     } else {
-      console.log('end of map');
+      console.log("end of map");
     }
   }
-  moveWest(limit) {
+  moveLeft(limit) {
     if (this.destLocation.x > 0) {
-      console.log('move West');
+      console.log("move West");
       this.destLocation.x--;
     } else {
-      console.log('end of map');
+      console.log("end of map");
     }
   }
 
+  takesDamage() {
+    console.log("Autsch’n");
+  }
+
   updateLocation() {
-    this.location = [...destLocation];
+    this.location = { ...this.destLocation };
+    // console.log(this.location);
   }
 
   showStatus() {
@@ -180,7 +183,7 @@ class Map {
   }
 
   getFieldById(id) {
-    return this.fields.filter((field) => field.id === id)[0];
+    return this.fields.find((field) => field.fieldId === id);
   }
 }
 
